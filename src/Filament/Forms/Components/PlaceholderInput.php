@@ -3,13 +3,20 @@
 namespace Codedor\FilamentPlaceholderInput\Filament\Forms\Components;
 
 use Closure;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\Concerns;
+use Filament\Forms\Components\Contracts\HasHintActions;
 use Filament\Forms\Components\Field;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Request;
 
-class PlaceholderInput extends Field
+class PlaceholderInput extends Component implements HasHintActions
 {
+	use Concerns\HasHelperText;
+	use Concerns\HasHint;
+	use Concerns\HasName;
+
     protected string $view = 'filament-placeholder-input::forms.components.placeholder-input';
 
     public null|array|string|Closure $linksWith = null;
@@ -18,7 +25,16 @@ class PlaceholderInput extends Field
 
     public bool|Closure $canCopy = false;
 
-    public function linksWith(null|array|string|Closure $linksWith): static
+	public static function make(string $name): static
+	{
+		$static = app(static::class, ['name' => $name]);
+		$static->configure();
+
+		return $static;
+	}
+
+
+	public function linksWith(null|array|string|Closure $linksWith): static
     {
         if (is_string($linksWith)) {
             $linksWith = Arr::wrap($linksWith);
@@ -32,11 +48,16 @@ class PlaceholderInput extends Field
     public function getLinksWith(): Collection
     {
         $form = $this->getLivewire()->getForm('form');
-
+		$activeLocale = $this->getLivewire()->activeLocale;
         return collect($this->evaluate($this->linksWith))->mapWithKeys(fn ($key) => [
-            $key => $form->getComponent("data.{$key}")->getLabel(),
+            $key => $form->getComponent("data.{$activeLocale}.{$key}")->getLabel(),
         ]);
     }
+
+	public function getActiveLocale()
+	{
+		return $this->getLivewire()->activeLocale;
+	}
 
     public function variables(array|Closure $variables): static
     {

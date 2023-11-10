@@ -2,20 +2,23 @@
     $linksWith = $getLinksWith();
     $variables = $getVariables();
     $canCopy = $canCopy();
+	$activeLocale = $getActiveLocale();
 @endphp
 
 <x-dynamic-component
-    :component="$getFieldWrapperView()"
-    :field="$field"
+        :component="$getFieldWrapperView()"
+        :id="$getId()"
+
 >
     <div x-data="{
         linked: @js($linksWith->keys()->first()),
+        active_locale: @js($activeLocale),
         addToBody (e, key) {
             // Append the variable (key) to the body
-            let original = $wire.get('data.' + this.linked)
+            let original = $wire.get('data.' + this.active_locale + '.' + this.linked)
             let updated = ((! original) ? '' : original + ' ') + '@{{ ' + key + ' }}'
 
-            $wire.set('data.' + this.linked, updated)
+            $wire.set('data.' + this.active_locale + '.' + this.linked, updated)
 
             // Let tiptap know the content has been updated, on the next tick
             window.setTimeout(() => $dispatch('refresh-tiptap-editors'), 0)
@@ -31,36 +34,45 @@
                 .send()
         }
     }">
+
         @if ($linksWith && $linksWith->count() > 1)
-            <select x-model="linked">
-                @foreach ($linksWith as $target => $label)
-                    <option value="{{ $target }}">
-                        {{ $label }}
-                    </option>
-                @endforeach
-            </select>
+            <x-filament::input.wrapper>
+                <x-filament::input.select x-model="linked">
+                    @foreach ($linksWith as $target => $label)
+                        <option value="{{ $target }}">
+                            {{ $label }}
+                        </option>
+                    @endforeach
+                </x-filament::input.select>
+            </x-filament::input.wrapper>
         @endif
 
-        <table>
+        <div class="flex flex-wrap gap-3 mt-6">
             @foreach ($variables as $variable)
-                <tr class="flex gap-4 items-center">
-                    @if ($linksWith && $linksWith->isNotEmpty())
-                        <td x-on:click="addToBody($event, @js($variable->getKey()))">
-                            <x-heroicon-o-plus class="w-5 h-5" />
-                        </td>
-                    @endif
 
-                    @if ($canCopy)
-                        <td x-on:click="copyToClipboard(@js($variable->getKey()))">
-                            <x-heroicon-o-clipboard class="w-5 h-5" />
-                        </td>
-                    @endif
-
-                    <td>
+                @if ($linksWith && $linksWith->isNotEmpty())
+                    @php
+                        $string = 'addToBody($event, "' . $variable->getKey().'")';
+                    @endphp
+                    <x-filament::button
+                            :x-on:click="$string"
+                            icon="heroicon-o-plus"
+                            size="xs"
+                            outlined
+                            color="info">
                         {{ $variable->getLabel() }}
-                    </td>
-                </tr>
+                    </x-filament::button>
+                @elseif($canCopy)
+                    <x-filament::button
+                            x-on:click="copyToClipboard(@js($variable->getKey()))"
+                            icon="heroicon-o-plus"
+                            color="info">
+                        {{ $variable->getLabel() }}
+                    </x-filament::button>
+                @endif
+
             @endforeach
-        </table>
+        </div>
     </div>
 </x-dynamic-component>
+
