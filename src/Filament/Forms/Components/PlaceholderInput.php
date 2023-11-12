@@ -50,7 +50,7 @@ class PlaceholderInput extends Component implements HasHintActions
         $form = $this->getLivewire()->getForm('form');
 		$activeLocale = $this->getLivewire()->activeLocale;
         return collect($this->evaluate($this->linksWith))->mapWithKeys(fn ($key) => [
-            $key => $form->getComponent("data.{$activeLocale}.{$key}")->getLabel(),
+            $key => optional($form->getComponent("data.{$activeLocale}.{$key}"))->getLabel(),
         ]);
     }
 
@@ -68,7 +68,7 @@ class PlaceholderInput extends Component implements HasHintActions
 
     public function getVariables(): ?array
     {
-        return $this->evaluate($this->variables) ?? method_exists($this->getRecord(), 'getPlaceholderVariables')
+        return $this->evaluate($this->variables) ?? $this->getRecord() && method_exists($this->getRecord(), 'getPlaceholderVariables')
             ? $this->getRecord()->getPlaceholderVariables()
             : [];
     }
