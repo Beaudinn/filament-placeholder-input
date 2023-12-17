@@ -17,16 +17,16 @@
         addToBody (e, key) {
             e.preventDefault();
             // Append the variable (key) to the body
-            let original = $wire.get('data.' + this.active_locale + '.' + this.linked)
+            let original = $wire.get('data.' + this.linked)
             let updated = ((! original) ? '' : original + ' ') + '@{{ ' + key + ' }}'
 
-            //console.log(this.linked, original, updated);
-            $wire.set('data.' + this.active_locale + '.' + this.linked, updated)
+            $wire.set('data.' + this.linked, updated)
 
             // Let tiptap know the content has been updated, on the next tick
             //window.setTimeout(() => $dispatch('refresh-tiptap-editors'), 0)
         },
-        copyToClipboard (key) {
+        copyToClipboard (e, key) {
+             e.preventDefault();
             // Copy the variable (key) to the clipboard
             // Only works on secure origins (https://)
             navigator.clipboard.writeText('@{{ ' + key + ' }}')
