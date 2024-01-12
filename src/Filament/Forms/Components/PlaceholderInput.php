@@ -70,7 +70,7 @@ class PlaceholderInput extends Component implements HasHintActions
     {
 
         return $this->evaluate($this->variables) ?? $this->getRecord() && method_exists($this->getRecord(), 'getPlaceholderVariables')
-            ? $this->getRecord()->getPlaceholderVariables($this->name)
+            ? $this->getRecord()->getPlaceholderVariables($this->getName())
             : [];
     }
 
